@@ -1,0 +1,13 @@
+Package: IAExpSuv
+Type: Package
+Title: IAExpSuv is used for predicting the five-year risk of death of stage IA lung adenocarcinoma
+Version: 0.1.0
+Author: person("YANLU","Xiong",email="xiong21@fmmu.edu.cn",role =c("aut","cre") )
+Maintainer: The package maintainer <xiong21@fmmu.edu.cn>
+Description: IAExpSuv is used for predicting the five-year risk of death of stage IA lung adenocarcinoma based on gene expression data
+License: MIT
+Encoding: UTF-8
+LazyData: true
+Depends: 
+    R (>= 2.10)
+RoxygenNote: 7.2.0

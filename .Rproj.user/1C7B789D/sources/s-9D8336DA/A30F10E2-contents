@@ -1,0 +1,72 @@
+
+
+IAdata1<-read.table("D:/data/data16/IA score/genecoef0719.csv",sep=",",header=TRUE,stringsAsFactors=FALSE)
+IAdata1<-IAdata1[order(IAdata1$GeneID),]
+usethis::use_data(IAdata1)
+
+IAdata2<-read.table("D:/data/data16/standardmatrix0710.csv",sep=",",header=TRUE,stringsAsFactors=FALSE)
+IAdata2<-IAdata2[order(IAdata2$GeneID),]
+usethis::use_data(IAdata2)
+
+
+
+
+IApre1<-function(x){x<-subset(x,x$GeneID %in% IAdata1$GeneID,select=c(1:ncol(x)))
+                 x<-x[order(x$GeneID),]
+                 Patients<-colnames(x)[-1]
+                 rownames(x)<-x$GeneID
+                 x<-as.data.frame(t(scale(t(x[,-1]))))
+                 x<-as.data.frame(sapply(x,function(y)sum(y*IAdata1$coef)))
+                 x$Patients<-Patients
+                 colnames(x)<-c("LAS","Patients")
+                 fiveyears<-sapply(x[,1],function(y)(1/(1+exp(-(-0.3628 + (-1.8313*y))))))
+                 x<-data.frame(x[,2],fiveyears)
+                 colnames(x)<-c("Patients","Survivial.rate.of.five.years")
+                 x}
+
+
+IApre2<-function(x){x<-x[order(x$GeneID),]
+                GeneID1<-x$GeneID
+                Patients<-colnames(x)[-1]
+                x1<-as.data.frame(apply(x[,-1],2,function(y)(y/quantile(y,0.75))))
+                x2<-as.data.frame(apply(x[,-1],2,function(y)(y-median(y))/mad(y)))
+                x1$GeneID<- GeneID1
+                x1<-x1[,c(ncol(x1),c(1:(ncol(x1)-1)))]
+                x1<-x1[order(x1$GeneID),]
+                x1<-subset(x1,x1$GeneID %in% IAdata2$GeneID,select=c(1:ncol(x1)))
+                x1<-x1[order(x1$GeneID),]
+                GeneID2<-x1$GeneID
+                x1<-as.data.frame(sapply(x1[,-1],function(z)z<-as.data.frame(t(scale(t(cbind(z,IAdata2)))))[,1]))
+                x1$GeneID<- GeneID2
+                x1<-x1[,c(ncol(x1),c(1:(ncol(x1)-1)))]
+                x1<-subset(x1,x1$GeneID %in% IAdata1$GeneID,select=c(1:ncol(x1)))
+                x1<-x1[order(x1$GeneID),]
+                rownames(x1)<-x1$GeneID
+                x1<-as.data.frame(sapply(x1[,-1],function(y)sum(y*IAdata1$coef)))
+                x1$Patients<-Patients
+                colnames(x1)<-c("LAS","Patients")
+                UQ<-sapply(x1[,1],function(y)(1/(1+exp(-(-0.3628 + (-1.8313*y))))))
+                x1<-data.frame(x1[,2],UQ)
+                colnames(x1)<-c("Patients","UQ")
+                x2$GeneID<- GeneID1
+                x2<-x2[,c(ncol(x2),c(1:(ncol(x2)-1)))]
+                x2<-x2[order(x2$GeneID),]
+                x2<-subset(x2,x2$GeneID %in% IAdata2$GeneID,select=c(1:ncol(x2)))
+                x2<-x2[order(x2$GeneID),]
+                GeneID2<-x2$GeneID
+                x2<-as.data.frame(sapply(x2[,-1],function(z)z<-as.data.frame(t(scale(t(cbind(z,IAdata2)))))[,1]))
+                x2$GeneID<- GeneID2
+                x2<-x2[,c(ncol(x2),c(1:(ncol(x2)-1)))]
+                x2<-subset(x2,x2$GeneID %in% IAdata1$GeneID,select=c(1:ncol(x2)))
+                x2<-x2[order(x2$GeneID),]
+                rownames(x2)<-x2$GeneID
+                x2<-as.data.frame(sapply(x2[,-1],function(y)sum(y*IAdata1$coef)))
+                x2$Patients<-Patients
+                colnames(x2)<-c("LAS","Patients")
+                MAD<-sapply(x2[,1],function(y)(1/(1+exp(-(-0.3628 + (-1.8313*y))))))
+                x2<-data.frame(x2[,2],MAD)
+                colnames(x2)<-c("Patients","MAD")
+                P<-merge(x1,x2,by=c("Patients"))
+                P$Survivial.rate.of.five.years<-((P$UQ+P$MAD)/2)
+                S<-P[,c(1,4)]
+                }
